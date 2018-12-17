@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>vue-lite</title>
+
+</head>
+<body>
+    <div id="app">
+        <span>{{user.data}}</span>
+        <input type="text" v-model="user.data">
+        <div>{{user}}</div>
+        <ul>
+            <li>{{user.data}}</li>
+
+        </ul>
+        <ul>
+            <li v-repeat="item in users">
+                {{item + "~~hha "}}
+            </li>
+        </ul>
+        <ul>
+            <li v-repeat="var item in users1">
+               My name is  {{item.name + item.age}}    ,Im  {{item.age}} years old....
+            </li>
+        </ul>
+        <ul >
+            <li v-repeat="item in  strs">{{item}}</li>
+        </ul>
+        <ul>    
+            <li v-repeat="item in objs">
+                {{item.name }}   , {{item.age}}
+             </li>
+        </ul>
+    </div>
+
+</body>
+<script src="./vue-lite.js"></script>
+<script src="./index.js"></script>
+</html>
