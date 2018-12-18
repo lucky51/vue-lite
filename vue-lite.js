@@ -108,9 +108,9 @@ let VueLite = function(opts){
             return false;
         },
         "v-repeat": (el, data, exp) => {
-            //resolve exp
-            //xx in arry cloneNode
-            if (/^(var)?\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s+in\s+[\S\s]+/.test(exp) || /^(var\s+)?\s*(\(\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s*\,\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s*\))*?\s+in\s+[\S\s]+/.test(exp)) {
+            //resolve exp    old /^(var\s+)?\s*(\(\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s*\,\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s*\))*?\s+in\s+[\S\s]+/
+            //xx in arry cloneNode      
+            if (/^(var)?\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s+in\s+[\S\s]+/.test(exp) || /^(var\s+)?\s*\((\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s*\,\s*)*\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s*\)\s+in\s+[\S\s]+/g.test(exp)) {
                 var param1, param2,exp;
                 if (exp.indexOf('(') > -1) {
                     var splt = exp.split('in');
