@@ -1,20 +1,72 @@
+/**
+ * @Vue lite
+ * @author github.com/lucky51
+ * @date 2018-09-09 
+ */
 
-
-//事件订阅
-let Subscriber = function(callback){
+//evevt subscriber
+let Subscriber = function (callback, execlines){
     this.func = callback;
+    this.lines = execlines;
 }
 Subscriber.prototype={
     constructor:Subscriber,
-    update(val){
-        this.func(val);
+    line :function () {
+        var gen; var args = arguments;
+        if (arguments.length === 0) return;
+        else {
+            gen = function* () {
+                for (let index = 0; index < args.length; index++) {
+                    const element = args[index];
+                    if (typeof element === 'function') {
+                        if (index === args.length - 1) return yield element;
+                        else {
+                            var val = yield element;
+                        }
+                    };
+                }
+            }
+        }
+        return function () {
+            var initdata = null;
+            if (arguments.length === 1) {
+                initdata = arguments[0];
+            }
+            return async function (callback) {
+                var gfun = gen();
+                var result;
+                try {
+                    while (!((result = gfun.next()).done)) {
+                        var nx = result.value;
+                        if (typeof nx === 'function') {
+                            var backrs = nx(initdata);
+                            if (backrs['then']) {
+                                initdata = await backrs;
+                            } else {
+                                initdata = backrs;
+                            }
+                        }
+                    }
+                    callback(initdata);
+                } catch (error) {
+                    callback(error);
+                }
+            }
+        }
+    },
+    update(val){ 
+        if(this.lines){
+            this.line(...this.lines)(val)((result)=>{       
+                this.func(result);
+            });
+        }else{
+            this.func(val);
+        }           
     }
 }
-
-//事件发布
+//event publisher
 let Publisher = function(){
     this.subs = [];
-
 }
 Publisher.prototype={
     constructor:Publisher,
@@ -27,18 +79,35 @@ Publisher.prototype={
         this.subs.push(sub);
     }
 }
-
+/**
+ * Vuelite constructor
+ * @param {*} opts 
+ */
 let VueLite = function(opts){
     this.taget = null;
     this._data = opts["data"];
     this._directives ={
         "v-model":(el,data,exp)=>{
-            el.value = this.execExp(exp,data);
+            el.value = this.execExp2(exp, data, function () {
+                data.taget = new Subscriber(function (newVal) {
+                    el.value = newVal;
+            },
+            [
+                function (newVal2) {
+             
+                    var nn = data.execExp2(exp, data);
+                    return nn;
+                }
+            ]);
+            },
+            function () {
+                data.taget = null;
+            });
             el.addEventListener("keyup",(event)=>{
                 this.setExpData(event.target.value, data, exp);
             });
             // add watcher
-            return true;
+            return false;
         },
         "v-repeat": (el, data, exp) => {
             //resolve exp
@@ -50,7 +119,7 @@ let VueLite = function(opts){
                     exp = result[1];
                 }
                 
-                var resolveData = this.execExp(exp1, this),counter=0;
+                var resolveData = this.execExp2(exp1, this),counter=0;
                 if (typeof resolveData !== "object" && typeof resolveData !== 'string') throw 'data type is not iterable';
                 var temp = el.cloneNode(true);
                     for (let index in resolveData) {
@@ -146,17 +215,13 @@ VueLite.prototype={
                 return (isExist =vm._directives.hasOwnProperty(item));
             }(this)) &&
              this._directives[item](elem, this, obj[item]) &&(function(vm){
-                 vm.execExp(obj[item],vm,function(){
-                    vm.taget = new Subscriber(function (newVal) {
-                        elem.value = newVal;
-                    });
-                },
-                function(){
-                    vm.taget =null;
-                })
+                
             })(this); 
         }
         return isExist;
+    },
+    setExpData2(val,data,exp){
+        //var resolveExp = new Function(`with(this){ ${exp}=val;}`);
     },
     setExpData(val ,data ,exp){
         if(val ===undefined) throw TypeError("val type error.");
@@ -181,6 +246,16 @@ VueLite.prototype={
         }
         return value;
     },
+    resolveDynamicExp(){
+
+    },
+    execExp2(exp,data,callback1,callback2){
+        var resolveExp = new Function(`with(this){return ${exp};}`);
+        callback1 &&callback1();
+        var result = resolveExp.call(data);
+        callback2 && callback2();
+        return result;
+    },
     execExp(exp,data,callback1,callback2){
         var expclips =exp.split('.');
         var value = data;
@@ -200,32 +275,23 @@ VueLite.prototype={
         }
         return value;
     },
+    //get  mustache expression
     getExpMustache(txt,callback){
         let reg = /\{\{(.*?)\}\}/g;
         var expresult = [];
         return txt.replace(reg, (exp1, expcontent, idx) => {
             expresult.push([exp1, expcontent]);          
             return callback(exp1,expcontent);
-        })
-       
-        // while ((regsult = reg.exec(txt)) !== null) {
-        //     result.push(regsult[1]);
-           
-        // }   
-        // if(result.length> 0 ){
-        //     result.
-        //     callback();
-        // }
-        // return result;
+        });
     },
     getExpValue(node,prop,txt, data){
         let result ;
         let regarr=[];
        // let reg = /\{\{(.*?)\}\}/g;
         this.getExpMustache(txt, (mus,content)=>{
-            let value = this.execExp(content, data, () => {
-                this.taget = new Subscriber(function (newVal) {
-                    node[prop] = newVal;
+            let value = this.execExp2(content, data, () => {
+                this.taget = new Subscriber( (newVal)=> {
+                    node[prop] = this.execExp2(content,data) ;
                 });
             }, () => {
                 this.taget = null;
@@ -290,8 +356,9 @@ VueLite.prototype={
                         return element;
                     },
                     set(newVal){
-                        _publisher.notify(newVal);
                         element = newVal;
+                        _publisher.notify(newVal);
+                       
                     }
                 });
                 if(typeof element ==='object' && Object.prototype.toString.call(element)==='[object Object]'){
@@ -318,3 +385,5 @@ VueLite.prototype={
         }
     }
 }
+
+

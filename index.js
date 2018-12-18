@@ -7,19 +7,20 @@ let app = new VueLite({
             data:123
         },
         users:[
-           "1.你好","2.好么","3.哈哈"
+           "1.你好","2.好么","3.哈哈" ,"4.没错我是数组"
         ],
         users1:[
             {name:"wangwu",age:1},
             { name: "zhangsan", age: 12 },
             { name: "lisi", age: 13 }
         ],
-        strs:"nihaoniuhaonihao123m",
+        strs:"hello, Im string ",
         objs:{
-            name:"object",
+            name:"hello ,Im  object",
             age:22
         }
     }
 });
+
 
 console.log(app);
