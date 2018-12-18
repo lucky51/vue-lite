@@ -94,9 +94,7 @@ let VueLite = function(opts){
             },
             [
                 function (newVal2) {
-             
-                    var nn = data.execExp2(exp, data);
-                    return nn;
+                    return data.execExp2(exp, data);
                 }
             ]);
             },
@@ -124,9 +122,7 @@ let VueLite = function(opts){
                     }else{
                         param1 =lr
                     }
-                    exp = splt[1].replace(/[\s]/g,'');
-                    
-                    
+                    exp = splt[1].replace(/[\s]/g,'');                 
                 }else{
                     var result = this.split(exp, ' ');
                     param1 = result[0], exp = result[result.length - 1];
@@ -135,8 +131,6 @@ let VueLite = function(opts){
                         param1 = result[1];
                     }
                 }
-                
-                
                 var resolveData = this.execExp2(exp, this),counter=0;
                 if (typeof resolveData !== "object" && typeof resolveData !== 'string') throw 'data type is not iterable';
                 var temp = el.cloneNode(true);
@@ -149,7 +143,7 @@ let VueLite = function(opts){
                         var tmpele = temp.cloneNode(true);
                         this.findChildNode(tmpele, (sub) => {
                             var res = this.getExpMustache(sub.textContent, (txt, content) => {
-                                var tmpresult = (new Function(param1, param2, `return ${content};`)).call(this, index, element);
+                                var tmpresult = (new Function(param1, param2, `return ${content};`)).call(this, element, index);
                                
                                 return tmpresult;
                             })

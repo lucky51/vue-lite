@@ -22,8 +22,8 @@
             </li>
         </ul>
         <ul>
-            <li v-repeat="var item in users1">
-               My name is  {{item.name + item.age}}    ,Im  {{item.age}} years old....
+            <li v-repeat="var (item ,key) in users1">
+               My name is  {{item.name }}    ,Im  {{item.age}} years old....  {{key}}
             </li>
         </ul>
         <ul >
