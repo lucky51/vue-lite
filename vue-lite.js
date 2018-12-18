@@ -112,27 +112,44 @@ let VueLite = function(opts){
         "v-repeat": (el, data, exp) => {
             //resolve exp
             //xx in arry cloneNode
-            if (/^(var)?\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s+in\s+[\S\s]+/.test(exp)) {
-                var result = this.split(exp, ' ');
-                var exp = result[0], exp1 = result[result.length - 1];
-                if (result[0] === ('var')) {
-                    exp = result[1];
+            if (/^(var)?\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s+in\s+[\S\s]+/.test(exp) || /^(var\s+)?\s*(\(\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s*\,\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s*\))*?\s+in\s+[\S\s]+/.test(exp)) {
+                var param1, param2,exp;
+                if (exp.indexOf('(') > -1) {
+                    var splt = exp.split('in');
+                    var lr = splt[0].replace(/[\s\(\)]/g, '').replace(/var/,'');
+                    if(lr.indexOf(',')>-1){
+                        var lrarr =lr.split(',');
+                        param1 = lrarr[0];
+                        param2 = lrarr[1];    
+                    }else{
+                        param1 =lr
+                    }
+                    exp = splt[1].replace(/[\s]/g,'');
+                    
+                    
+                }else{
+                    var result = this.split(exp, ' ');
+                    param1 = result[0], exp = result[result.length - 1];
+
+                    if (result[0] === ('var')) {
+                        param1 = result[1];
+                    }
                 }
                 
-                var resolveData = this.execExp2(exp1, this),counter=0;
+                
+                var resolveData = this.execExp2(exp, this),counter=0;
                 if (typeof resolveData !== "object" && typeof resolveData !== 'string') throw 'data type is not iterable';
                 var temp = el.cloneNode(true);
                     for (let index in resolveData) {
                        
                         let element = resolveData[index];
                         if (typeof resolveData === 'object' && !Array.isArray(resolveData)){
-                            element = resolveData;
                             if(!resolveData.hasOwnProperty(index))continue;
                         }
                         var tmpele = temp.cloneNode(true);
                         this.findChildNode(tmpele, (sub) => {
                             var res = this.getExpMustache(sub.textContent, (txt, content) => {
-                                var tmpresult = (new Function(exp, `return ${content};`)).call(this, element);
+                                var tmpresult = (new Function(param1, param2, `return ${content};`)).call(this, index, element);
                                
                                 return tmpresult;
                             })
@@ -146,28 +163,7 @@ let VueLite = function(opts){
                             el = tmpele;
                         }
                         counter++;
-                    }
-                //} 
-                // if (Array.isArray(resolveData)||typeof resolveData ==='string') {
-                //     for (let index = 0; index < resolveData.length; index++) {
-                //         var tmpele = temp.cloneNode(true);
-                //         const element = resolveData[index];
-                //         this.findChildNode(tmpele, (sub) => {
-                //             var res=this.getExpMustache(sub.textContent, (txt,content) => {                          
-                //                 return (new Function(exp, `return ${content};`)).call(this, element);
-                //             })
-                //             sub.textContent = res;
-                //         });
-                //         if (index === 0) {
-                //             this.replaceElement(tmpele, el);
-                //             el = tmpele;
-                //         } else {
-                //             this.insertAfter(tmpele, el);
-                //             el = tmpele;
-                //         }
-                //     }
-                // } 
-                             
+                    }    
             }
         }
     
@@ -287,7 +283,6 @@ VueLite.prototype={
     getExpValue(node,prop,txt, data){
         let result ;
         let regarr=[];
-       // let reg = /\{\{(.*?)\}\}/g;
         this.getExpMustache(txt, (mus,content)=>{
             let value = this.execExp2(content, data, () => {
                 this.taget = new Subscriber( (newVal)=> {

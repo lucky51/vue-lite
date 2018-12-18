@@ -29,10 +29,11 @@
         <ul >
             <li v-repeat="item in  strs">{{item}}</li>
         </ul>
-        <ul>    
-            <li v-repeat="item in objs">
-                {{item.name }}   , {{item.age}}
-             </li>
+    
+        <ul>
+            <li v-repeat="(key, val) in objs">
+                key {{key}}  value : {{val}}
+            </li>
         </ul>
     </div>
 
