@@ -110,7 +110,8 @@ let VueLite = function(opts){
         "v-repeat": (el, data, exp) => {
             //resolve exp    old /^(var\s+)?\s*(\(\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s*\,\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s*\))*?\s+in\s+[\S\s]+/
             //xx in arry cloneNode      
-            if (/^(var)?\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s+in\s+[\S\s]+/.test(exp) || /^(var\s+)?\s*\((\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s*\,\s*)*\s*[_a-zA-Z]+[_a-zA-Z0-9]*\s*\)\s+in\s+[\S\s]+/g.test(exp)) {
+            if (/^(var)?\s*[_$a-zA-Z]+[_$a-zA-Z0-9]*\s+in\s+[\S\s]+/.test(exp) ||
+             /^(var\s+)?\s*\((\s*[_$a-zA-Z]+[_$a-zA-Z0-9]*\s*\,\s*)*\s*[_$a-zA-Z]+[_$a-zA-Z0-9]*\s*\)\s+in\s+[\S\s]+/g.test(exp)) {
                 var param1, param2,exp;
                 if (exp.indexOf('(') > -1) {
                     var splt = exp.split('in');
@@ -204,14 +205,9 @@ VueLite.prototype={
             (function(vm){
                 return (isExist =vm._directives.hasOwnProperty(item));
             }(this)) &&
-             this._directives[item](elem, this, obj[item]) &&(function(vm){
-                
-            })(this); 
+             this._directives[item](elem, this, obj[item])
         }
         return isExist;
-    },
-    setExpData2(val,data,exp){
-        //var resolveExp = new Function(`with(this){ ${exp}=val;}`);
     },
     setExpData(val ,data ,exp){
         if(val ===undefined) throw TypeError("val type error.");
